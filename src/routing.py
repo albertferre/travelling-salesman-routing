@@ -1,7 +1,12 @@
 from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
-from typing import List, Optional
+from typing import List, Optional, Tuple
+import osmnx as ox
+import networkx as nx
+import folium
+from folium import plugins
+import numpy as np
 
 
 def print_solution(manager, routing, solution, names=None):
@@ -93,3 +98,81 @@ def optimize_routes(
         return route
     else:
         return []
+
+
+def plot_route(
+    coordinates: List[Tuple[float, float]], dist: float = 1000
+) -> folium.Map:
+    """
+    Plot the route on a Folium map.
+
+    Args:
+        coordinates (List[Tuple[float, float]]): List of tuples containing (latitude, longitude) pairs.
+        dist (float, optional): Distance for graph retrieval. Defaults to 1000.
+
+    Returns:
+        folium.Map: Folium map with the plotted route.
+    """
+
+    # Calculate the median tuple
+    median_tuple = tuple(np.median(np.array(coordinates), axis=0))
+
+    # Calculate the Euclidean distance of each tuple from the median tuple
+    distances = [
+        np.linalg.norm(np.array(t) - np.array(median_tuple)) for t in coordinates
+    ]
+
+    # Find the index of the tuple with the minimum distance
+    closest_index = np.argmin(distances)
+
+    # Get the tuples with the closest and farthest values to the median tuple
+    closest_tuple = coordinates[closest_index]
+
+    # Create a graph using OpenStreetMap data
+    graph = ox.graph_from_point(
+        center_point=closest_tuple, dist=dist, network_type="drive"
+    )
+
+    # Create a folium map centered at the start coordinate
+    map_center = coordinates[0]
+    mymap = folium.Map(location=map_center, zoom_start=15, tiles="cartodbpositron")
+
+    # Plot the route between each pair of consecutive coordinates
+    num_stops = len(coordinates)
+    for i in range(num_stops - 1):
+        start_node = ox.distance.nearest_nodes(
+            graph, coordinates[i][1], coordinates[i][0]
+        )
+        end_node = ox.distance.nearest_nodes(
+            graph, coordinates[i + 1][1], coordinates[i + 1][0]
+        )
+        route = nx.shortest_path(graph, start_node, end_node, weight="length")
+        route_coordinates = [
+            (graph.nodes[node]["y"], graph.nodes[node]["x"]) for node in route
+        ]
+
+        route_polyline = folium.PolyLine(locations=route_coordinates, color="red")
+        mymap.add_child(route_polyline)
+
+        ant_path = plugins.AntPath(
+            locations=route_coordinates,
+            color="blue",
+            dash_array=[10, 50],
+            delay=500,
+            weight=5,
+        )
+        mymap.add_child(ant_path)
+
+    # Add markers for the start and end points, and blue markers for the intermediate points
+    folium.Marker(
+        location=coordinates[-1], icon=folium.Icon(color="red", icon="stop")
+    ).add_to(mymap)
+    folium.Marker(
+        location=coordinates[0], icon=folium.Icon(color="green", icon="play")
+    ).add_to(mymap)
+    for coordinate in coordinates[1:-1]:
+        folium.Marker(
+            location=coordinate, icon=folium.Icon(color="blue", icon="store")
+        ).add_to(mymap)
+
+    return mymap

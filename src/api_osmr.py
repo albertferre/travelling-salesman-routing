@@ -59,6 +59,27 @@ def get_matrix(coordinates: str) -> dict:
         raise Exception(f"An error occurred while fetching the distance matrix: {e}")
 
 
+def parse_coordinates(df: pd.DataFrame) -> str:
+    """
+    Parse latitude and longitude data from a DataFrame and format it for the API request.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing 'lat' and 'lng' columns.
+
+    Returns:
+        str: Formatted coordinates string for the API request.
+    """
+    # Extract latitude and longitude columns from the DataFrame
+    coordinates = df[["lat", "lng"]]
+
+    # Convert DataFrame to a list of tuples and format as "lng,lat"
+    coordinates = list(coordinates.itertuples(index=False, name=None))
+    coordinates = [f"{c[1]},{c[0]}" for c in coordinates]
+
+    # Join the formatted coordinates with a semicolon
+    return ";".join(coordinates)
+
+
 if __name__ == "__main__":
     try:
         # Specify the path to the CSV file containing latitude and longitude data
