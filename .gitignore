@@ -3,3 +3,5 @@ cache/
 data/output
 
 prototypes/
+
+__pycache__/
