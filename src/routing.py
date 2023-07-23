@@ -1,11 +1,19 @@
 from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
+from typing import List, Optional
 
 
 def print_solution(manager, routing, solution, names=None):
-    """Prints solution on console."""
-    # print('Objective: {} km'.format(int(solution.ObjectiveValue()/1000)))
+    """
+    Prints the solution on the console.
+
+    Args:
+        manager: The routing index manager.
+        routing: The routing model.
+        solution: The solution obtained from the routing solver.
+        names (Optional[List[str]]): List of names corresponding to node indices. Defaults to None.
+    """
     index = routing.Start(0)
     plan_output = "Route for vehicle:\n"
     route_distance = 0
@@ -30,9 +38,20 @@ def print_solution(manager, routing, solution, names=None):
     print(plan_output)
 
 
-def optimize_routes(distance_matrix, depot, names=None):
-    """Entry point of the program."""
+def optimize_routes(
+    distance_matrix: List[List[int]], depot: int, names: Optional[List[str]] = None
+) -> List[int]:
+    """
+    Solves the vehicle routing problem and returns the optimized route.
 
+    Args:
+        distance_matrix (List[List[int]]): 2D list representing the distance matrix between nodes.
+        depot (int): Index of the depot (starting point).
+        names (Optional[List[str]]): List of names corresponding to node indices. Defaults to None.
+
+    Returns:
+        List[int]: The optimized route as a list of node indices.
+    """
     # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(
         len(distance_matrix), 1, depot
@@ -62,7 +81,7 @@ def optimize_routes(distance_matrix, depot, names=None):
     # Solve the problem.
     solution = routing.SolveWithParameters(search_parameters)
 
-    # Print solution on console.
+    # Print solution on console and return the optimized route.
     if solution:
         print_solution(manager, routing, solution, names)
         route = []
@@ -73,4 +92,4 @@ def optimize_routes(distance_matrix, depot, names=None):
         route.append(manager.IndexToNode(index))
         return route
     else:
-        return False
+        return []
