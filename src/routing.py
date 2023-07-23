@@ -101,7 +101,7 @@ def optimize_routes(
 
 
 def plot_route(
-    coordinates: List[Tuple[float, float]], dist: float = 1000
+    coordinates: List[Tuple[float, float]], dist: float = 1000, zoom_start: int = 15
 ) -> folium.Map:
     """
     Plot the route on a Folium map.
@@ -109,6 +109,7 @@ def plot_route(
     Args:
         coordinates (List[Tuple[float, float]]): List of tuples containing (latitude, longitude) pairs.
         dist (float, optional): Distance for graph retrieval. Defaults to 1000.
+        zoom_start (int, optional): Initial map zoom level. Defaults to 15.
 
     Returns:
         folium.Map: Folium map with the plotted route.
@@ -135,7 +136,9 @@ def plot_route(
 
     # Create a folium map centered at the start coordinate
     map_center = coordinates[0]
-    mymap = folium.Map(location=map_center, zoom_start=15, tiles="cartodbpositron")
+    mymap = folium.Map(
+        location=map_center, zoom_start=zoom_start, tiles="cartodbpositron"
+    )
 
     # Plot the route between each pair of consecutive coordinates
     num_stops = len(coordinates)
