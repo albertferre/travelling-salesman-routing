@@ -135,7 +135,7 @@ def plot_route(
     )
 
     # Create a folium map centered at the start coordinate
-    map_center = coordinates[0]
+    map_center = closest_tuple
     mymap = folium.Map(
         location=map_center, zoom_start=zoom_start, tiles="cartodbpositron"
     )
