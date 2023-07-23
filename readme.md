@@ -46,9 +46,8 @@ cd <repository_directory>
 Create and activate the Conda environment using the env.yaml file:
 ```bash
 conda env create -f env.yaml
-conda activate <env_name>
+conda activate travelling-salesman-routing
 ```
-Replace ```<env_name>``` with the desired name for your Conda environment.
 
 ## Notebook demo
 
